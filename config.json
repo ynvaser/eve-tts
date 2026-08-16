@@ -1,0 +1,15 @@
+{
+  "eveLogDirectory": "%USERPROFILE%\\Documents\\EVE\\logs\\Chatlogs",
+  "channels": [
+    "Fleet"
+  ],
+  "pollIntervalMs": 500,
+  "enableTts": true,
+  "ttsEngine": "kokoro",
+  "useGpu": false,
+  "audioDevice": "CABLE Input",
+  "characterVoices": {
+    "Davos Skyworth": "am_michael",
+    "Strelok Holmes": "bf_isabella"
+  }
+}

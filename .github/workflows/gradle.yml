@@ -1,0 +1,40 @@
+# GitHub Actions workflow to build EVE-TTS and automatically release eve-tts-windows.zip on push to main
+
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 25
+      uses: actions/setup-java@v4
+      with:
+        java-version: '25'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Build Windows Bundle with Gradle
+      run: ./gradlew clean zipWindowsBundle
+
+    - name: Set env
+      id: vars
+      shell: bash
+      run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Upload Release Asset
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/distributions/eve-tts-windows.zip
+        asset_name: eve-tts-windows.zip
+        tag: ${{ steps.vars.outputs.sha_short }}
+        overwrite: true

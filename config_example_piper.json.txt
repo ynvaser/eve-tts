@@ -1,0 +1,63 @@
+# EVE-TTS Configuration Example (Piper Engine)
+# Copy this file's contents into config.json to customize settings.
+
+{
+  # Path to your EVE Online chat logs directory.
+  # Accepts %USERPROFILE% environment variable or explicit paths like C:\Users\Name\Documents\EVE\logs\Chatlogs
+  "eveLogDirectory": "%USERPROFILE%\\Documents\\EVE\\logs\\Chatlogs",
+
+  # List of EVE chat channel names to monitor (e.g. ["Fleet", "Intel", "Corp"])
+  "channels": [
+    "Fleet",
+    "Intel"
+  ],
+
+  # Frequency in milliseconds to poll log files for new messages (default: 500)
+  "pollIntervalMs": 500,
+
+  # Optional timestamp threshold ("YYYY.MM.DD HH:MM:SS").
+  # Messages prior to this timestamp are ignored. Set to null to start from latest log entries.
+  "startFromTimestamp": null,
+
+  # Set to true to enable Text-to-Speech audio output, or false for console logging only.
+  "enableTts": true,
+
+  # TTS Engine to use: "piper" or "kokoro".
+  "ttsEngine": "piper",
+
+  # Set to true to enable NVIDIA CUDA GPU acceleration (requires NVIDIA drivers + CUDA 12.x installed), or false for CPU execution.
+  "useGpu": false,
+
+  # Target audio device name (case-insensitive substring match, e.g. "CABLE Input" for Virtual Audio Cable, "Speakers", "Headphones").
+  # If target mixer is not found at startup, available system audio devices will be listed and the app will stop.
+  "audioDevice": "CABLE Input",
+
+  # Map of EVE character names to Piper voice model aliases.
+  # characterVoices MUST be populated for TTS to process and synthesize character messages.
+  # Available Piper Voice Aliases:
+  #   - ryan / ryan_high             (US Male - Ryan High)
+  #   - lessac / lessac_high         (US Female - Lessac High)
+  #   - hfcmale / hfc_male_medium    (US Male - HFC Male Medium)
+  #   - hfcfemale / hfc_female_medium(US Female - HFC Female Medium)
+  #   - bryce / bryce_medium         (US Male - Bryce Medium)
+  #   - joe / joe_medium             (US Male - Joe Medium)
+  #   - john / john_medium           (US Male - John Medium)
+  #   - kristin / kristin_medium     (US Female - Kristin Medium)
+  #   - kusal / kusal_medium         (US Male - Kusal Medium)
+  #   - norman / norman_medium       (US Male - Norman Medium)
+  #   - sam / sam_medium             (US Male - Sam Medium)
+  #   - alba / alba_medium           (British Female - Alba Medium)
+  #   - cori / cori_high             (US Female - Cori High)
+  #   - alan / alan_medium           (US Male - Alan Medium)
+  #   - aru / aru_medium             (Aru Medium)
+  #   - jenny / jenny_dioco          (Jenny Dioco Medium)
+  #   - amy / sweetbbak_amy          (Amy)
+  #   - northern_english_male        (Northern English Male)
+  #   - siwis / fr_fr_siwis          (French Female - Siwis)
+  #   - ronnie / nl_nl_ronnie        (Dutch Male - Ronnie)
+  "characterVoices": {
+    "Davos Skyworth": "ryan",
+    "FleetCommander": "hfc_male",
+    "ScoutPilot": "lessac"
+  }
+}

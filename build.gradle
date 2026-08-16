@@ -1,0 +1,131 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'systems.bdev'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+application {
+    mainClass = 'systems.bdev.evetts.Main'
+}
+
+dependencies {
+    implementation 'org.pitest.voices:chorus:0.0.9'
+    implementation 'org.pitest.voices:kokoro-runtime:0.0.9'
+    implementation 'org.pitest.voices:model-downloader:0.0.9'
+    implementation 'org.pitest.voices:alba:0.0.9'
+    implementation 'org.pitest.voices:openvoice-phonemizer:0.0.9'
+    implementation 'org.pitest.voices:en_us:0.0.9'
+    implementation 'com.microsoft.onnxruntime:onnxruntime_gpu:1.22.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.0'
+    implementation 'org.slf4j:slf4j-api:2.0.12'
+    implementation 'ch.qos.logback:logback-classic:1.5.3'
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.register('createRuntimeImage', Exec) {
+    dependsOn tasks.jar
+
+    def javaHome = System.getProperty("java.home")
+    def jlinkExecutable = "$javaHome/bin/jlink"
+    if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+        jlinkExecutable += ".exe"
+    }
+
+    def outputDir = file("$buildDir/bundle")
+
+    doFirst {
+        delete outputDir
+    }
+
+    commandLine jlinkExecutable,
+            '--add-modules', 'java.base,java.logging,java.naming,java.desktop,jdk.unsupported',
+            '--strip-debug',
+            '--no-header-files',
+            '--no-man-pages',
+            '--compress=2',
+            '--output', outputDir.absolutePath
+}
+
+tasks.register('copyDependencies', Copy) {
+    dependsOn 'createRuntimeImage'
+    into "$buildDir/bundle/app"
+    from configurations.runtimeClasspath
+    from tasks.jar
+}
+
+tasks.register('createWindowsBundle') {
+    dependsOn 'copyDependencies'
+
+    doLast {
+        def bundleDir = file("$buildDir/bundle")
+
+        // Create double-clickable Windows launcher batch script
+        def runBat = file("$bundleDir/run.bat")
+        runBat.text = """@echo off
+title EVE Chat Log Service
+cd /d "%~dp0"
+echo ==================================================
+echo   Starting EVE-TTS Chat Log Service (Standalone)
+echo ==================================================
+echo.
+"%~dp0bin\\java.exe" -cp "%~dp0app\\*" systems.bdev.evetts.Main %*
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo Application stopped with exit code %ERRORLEVEL%.
+    pause
+)
+"""
+
+        // Copy default config.json, config_example_kokoro.json.txt, and config_example_piper.json.txt to bundle
+        def rootConfig = project.file("config.json")
+        if (rootConfig.exists()) {
+            project.copy {
+                from rootConfig
+                into bundleDir
+            }
+        }
+
+        def kokoroExample = project.file("config_example_kokoro.json.txt")
+        if (kokoroExample.exists()) {
+            project.copy {
+                from kokoroExample
+                into bundleDir
+            }
+        }
+
+        def piperExample = project.file("config_example_piper.json.txt")
+        if (piperExample.exists()) {
+            project.copy {
+                from piperExample
+                into bundleDir
+            }
+        }
+    }
+}
+
+tasks.register('zipWindowsBundle', Zip) {
+    dependsOn 'createWindowsBundle'
+    archiveFileName = "eve-tts-windows.zip"
+    destinationDirectory = file("$buildDir/distributions")
+    from("$buildDir/bundle")
+}

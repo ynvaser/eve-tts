@@ -1,0 +1,53 @@
+# EVE-TTS Configuration Example (Kokoro Engine)
+# Copy this file's contents into config.json to customize settings.
+
+{
+  # Path to your EVE Online chat logs directory.
+  # Accepts %USERPROFILE% environment variable or explicit paths like C:\Users\Name\Documents\EVE\logs\Chatlogs
+  "eveLogDirectory": "%USERPROFILE%\\Documents\\EVE\\logs\\Chatlogs",
+
+  # List of EVE chat channel names to monitor (e.g. ["Fleet", "Intel", "Corp"])
+  "channels": [
+    "Fleet",
+    "Intel"
+  ],
+
+  # Frequency in milliseconds to poll log files for new messages (default: 500)
+  "pollIntervalMs": 500,
+
+  # Optional timestamp threshold ("YYYY.MM.DD HH:MM:SS").
+  # Messages prior to this timestamp are ignored. Set to null to start from latest log entries.
+  "startFromTimestamp": null,
+
+  # Set to true to enable Text-to-Speech audio output, or false for console logging only.
+  "enableTts": true,
+
+  # TTS Engine to use: "kokoro" or "piper".
+  "ttsEngine": "kokoro",
+
+  # Set to true to enable NVIDIA CUDA GPU acceleration (requires NVIDIA drivers + CUDA 12.x installed), or false for CPU execution.
+  "useGpu": false,
+
+  # Target audio device name (case-insensitive substring match, e.g. "CABLE Input" for Virtual Audio Cable, "Speakers", "Headphones").
+  # If target mixer is not found at startup, available system audio devices will be listed and the app will stop.
+  "audioDevice": "CABLE Input",
+
+  # Map of EVE character names to Kokoro voice model aliases.
+  # characterVoices MUST be populated for TTS to process and synthesize character messages.
+  # Available Kokoro Voice Aliases:
+  #   - af_sarah    (American Female - Sarah)
+  #   - af_bella    (American Female - Bella)
+  #   - af_nicole   (American Female - Nicole)
+  #   - af_sky      (American Female - Sky)
+  #   - am_adam     (American Male - Adam)
+  #   - am_michael  (American Male - Michael)
+  #   - bf_emma     (British Female - Emma)
+  #   - bf_isabella (British Female - Isabella)
+  #   - bm_george   (British Male - George)
+  #   - bm_fable    (British Male - Fable)
+  #   - af          (American Female Default)
+  "characterVoices": {
+    "Davos Skyworth": "am_michael",
+    "Strelok Holmes": "bf_isabella"
+  }
+}
