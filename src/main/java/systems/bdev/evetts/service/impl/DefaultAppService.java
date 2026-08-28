@@ -201,9 +201,14 @@ public class DefaultAppService implements AppService {
 
             try (Chorus auditionChorus = new Chorus(chorusConfig)) {
                 Voice voice = auditionChorus.voice(resolver.resolveVoice(voiceName));
-                String textToSay = (sampleText != null && !sampleText.trim().isEmpty())
+                String rawText = (sampleText != null && !sampleText.trim().isEmpty())
                         ? sampleText.trim()
                         : "Fleet warp drive active. All pilots align to stargate.";
+
+                AppConfiguration currentConfig = configurationService.getConfiguration();
+                String textToSay = currentConfig != null
+                        ? TtsSpeechService.applyReplacements(rawText, currentConfig.getStringReplacements())
+                        : rawText;
 
                 Audio audio = voice.say(textToSay);
                 byte[] wavBytes = audio.asBytes();

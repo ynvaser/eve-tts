@@ -16,6 +16,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -180,6 +181,24 @@ public class ChatLogsTabView extends VBox {
         TableColumn<ChatEvent, String> msgCol = new TableColumn<>("Message Text");
         msgCol.setCellValueFactory(new PropertyValueFactory<>("message"));
         msgCol.setMinWidth(250);
+        msgCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String message, boolean empty) {
+                super.updateItem(message, empty);
+                if (empty || message == null) {
+                    setText(null);
+                    setTooltip(null);
+                } else {
+                    setText(message);
+                    ChatEvent event = getTableRow() != null ? getTableRow().getItem() : null;
+                    if (event != null && event.getDetails() != null && !event.getDetails().trim().isEmpty()) {
+                        setTooltip(new Tooltip(event.getDetails()));
+                    } else {
+                        setTooltip(null);
+                    }
+                }
+            }
+        });
 
         TableColumn<ChatEvent, ChatEventStatus> statusCol = new TableColumn<>("Status");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));

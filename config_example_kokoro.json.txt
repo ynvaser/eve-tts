@@ -49,5 +49,14 @@
   "characterVoices": {
     "Davos Skyworth": "am_michael",
     "Strelok Holmes": "bf_isabella"
+  },
+
+  # Optional map of substring replacements to fix model pronunciations or expand acronyms.
+  # Applied case-insensitively before text is passed to the voice synthesizer.
+  "stringReplacements": {
+    "dscan": "dee scan",
+    "FC": "Fleet Commander",
+    "Jita": "Ghee-tah",
+    "o7": "salute"
   }
 }

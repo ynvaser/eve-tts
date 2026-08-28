@@ -25,6 +25,7 @@ import systems.bdev.evetts.service.api.VoiceCatalogService;
 import systems.bdev.evetts.ui.view.ChatLogsTabView;
 import systems.bdev.evetts.ui.view.ConfigurationTabView;
 import systems.bdev.evetts.ui.view.DiagnosticsTabView;
+import systems.bdev.evetts.ui.view.ReplacementsTabView;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -55,6 +56,7 @@ public class MainViewController {
     // Views
     private ChatLogsTabView chatLogsView;
     private ConfigurationTabView configurationView;
+    private ReplacementsTabView replacementsView;
     private DiagnosticsTabView diagnosticsView;
 
     public MainViewController(
@@ -82,6 +84,11 @@ public class MainViewController {
                 voiceCatalogService,
                 appService
         );
+        this.replacementsView = new ReplacementsTabView(
+                configurationService,
+                voiceCatalogService,
+                appService
+        );
         this.diagnosticsView = new DiagnosticsTabView(
                 appService,
                 configurationService,
@@ -99,10 +106,13 @@ public class MainViewController {
         Tab tabConfig = new Tab("Configuration & Voices", configurationView);
         tabConfig.setClosable(false);
 
+        Tab tabReplacements = new Tab("String Replacements", replacementsView);
+        tabReplacements.setClosable(false);
+
         Tab tabDiag = new Tab("Diagnostics & Console", diagnosticsView);
         tabDiag.setClosable(false);
 
-        tabPane.getTabs().addAll(tabLogs, tabConfig, tabDiag);
+        tabPane.getTabs().addAll(tabLogs, tabConfig, tabReplacements, tabDiag);
         rootLayout.setCenter(tabPane);
     }
 
@@ -157,8 +167,12 @@ public class MainViewController {
         appService.addChatEventListener(event -> Platform.runLater(() -> {
             chatLogsView.addChatEvent(event);
             if (event.getMessage() != null) {
-                diagnosticsView.appendLog(String.format("[%s] %s > %s",
-                        event.getChannelName(), event.getSender(), event.getMessage()));
+                String logText = String.format("[%s] %s > %s%s",
+                        event.getChannelName(),
+                        event.getSender(),
+                        event.getMessage(),
+                        event.getDetails() != null ? " (" + event.getDetails() + ")" : "");
+                diagnosticsView.appendLog(logText);
             }
         }));
     }

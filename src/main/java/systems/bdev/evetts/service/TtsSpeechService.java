@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
@@ -236,23 +238,56 @@ public class TtsSpeechService implements AutoCloseable {
             logger.trace("Error serializing chat message to JSON: {}", e.getMessage());
         }
 
+        String originalMessage = chatMessage.getMessage() != null ? chatMessage.getMessage().trim() : "";
+        String textToSpeak = applyReplacements(originalMessage, config.getStringReplacements());
+
+        if (!textToSpeak.equals(originalMessage)) {
+            logger.info("🔄 [REPLACED] Original: \"{}\" -> Replaced: \"{}\"", originalMessage, textToSpeak);
+        }
+
         notifyChatEventListeners(new ChatEvent(
                 chatMessage.getTimestamp(),
                 chatMessage.getChannelName(),
                 cleanSender,
                 voiceModelName,
-                chatMessage.getMessage(),
-                ChatEventStatus.SPOKEN
+                originalMessage,
+                ChatEventStatus.SPOKEN,
+                textToSpeak.equals(originalMessage) ? null : "Spoken as: " + textToSpeak
         ));
 
         // Schedule TTS synthesis & playback if enabled and voice model is mapped
-        if (config.isEnableTts() && voiceModelName != null && chatMessage.getMessage() != null && !chatMessage.getMessage().trim().isEmpty()) {
-            String textToSpeak = chatMessage.getMessage().trim();
+        if (config.isEnableTts() && voiceModelName != null && !textToSpeak.isEmpty()) {
             final String selectedVoice = voiceModelName;
             ttsExecutor.submit(() -> speakMessage(selectedVoice, textToSpeak));
         }
 
         return true;
+    }
+
+    /**
+     * Applies user-configured substring replacements (case-insensitively) to improve pronunciation.
+     */
+    public static String applyReplacements(String text, Map<String, String> replacements) {
+        if (text == null || text.isEmpty() || replacements == null || replacements.isEmpty()) {
+            return text;
+        }
+
+        String result = text;
+        for (Map.Entry<String, String> entry : replacements.entrySet()) {
+            String target = entry.getKey();
+            String replacement = entry.getValue();
+            if (target == null || target.trim().isEmpty() || replacement == null) {
+                continue;
+            }
+            try {
+                result = Pattern.compile(Pattern.quote(target.trim()), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+                        .matcher(result)
+                        .replaceAll(Matcher.quoteReplacement(replacement));
+            } catch (Exception e) {
+                logger.warn("Failed to apply string replacement for target '{}': {}", target, e.getMessage());
+            }
+        }
+        return result;
     }
 
     public static List<String> splitIntoChunks(String text, int maxChunkLen) {

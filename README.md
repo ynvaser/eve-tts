@@ -65,6 +65,11 @@ Configure your settings in `config.json` alongside `run.bat`:
   "characterVoices": {
     "Davos Skyworth": "am_michael",
     "Strelok Holmes": "bf_isabella"
+  },
+  "stringReplacements": {
+    "dscan": "dee scan",
+    "FC": "Fleet Commander",
+    "Jita": "Ghee-tah"
   }
 }
 ```
@@ -82,6 +87,7 @@ Configure your settings in `config.json` alongside `run.bat`:
 | `useGpu` | Set to `true` for NVIDIA CUDA GPU acceleration (requires CUDA 12.x drivers), or `false` for CPU mode. | `false`                                                                                                 |
 | `audioDevice` | Substring match for audio output device (e.g. `"CABLE Input"`, `"Speakers"`). | `"CABLE Input"`                                                                                         |
 | `characterVoices` | Key-value map of character names to voice model aliases. | *(Required)* Make sure to not mix and match piper and kokoro voices, stick to what you've chosen above. |
+| `stringReplacements` | Optional map of substring replacements to fix model pronunciations or expand acronyms (case-insensitive). | `{}` |
 
 ---
 

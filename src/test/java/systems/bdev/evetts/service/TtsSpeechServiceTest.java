@@ -60,4 +60,38 @@ class TtsSpeechServiceTest {
         assertTrue(clean.contains("it. The"), "Should add space after period");
         assertTrue(clean.contains("rest - For"), "Should replace em dash with space-dash-space");
     }
+
+    @Test
+    void testApplyReplacementsCaseInsensitive() {
+        Map<String, String> replacements = new HashMap<>();
+        replacements.put("dscan", "dee scan");
+        replacements.put("FC", "Fleet Commander");
+        replacements.put("Jita", "Ghee-tah");
+
+        String input = "fc align to JITA stargate, check DSCAN please!";
+        String output = TtsSpeechService.applyReplacements(input, replacements);
+
+        assertEquals("Fleet Commander align to Ghee-tah stargate, check dee scan please!", output);
+    }
+
+    @Test
+    void testApplyReplacementsWithSpecialCharacters() {
+        Map<String, String> replacements = new HashMap<>();
+        replacements.put("o7", "salute!");
+        replacements.put("100$", "100 dollars");
+        replacements.put("warp.in", "warp in");
+
+        String input = "o7 pilots, pay 100$ and warp.in now.";
+        String output = TtsSpeechService.applyReplacements(input, replacements);
+
+        assertEquals("salute! pilots, pay 100 dollars and warp in now.", output);
+    }
+
+    @Test
+    void testApplyReplacementsNullOrEmptyHandling() {
+        assertNull(TtsSpeechService.applyReplacements(null, Map.of("a", "b")));
+        assertEquals("", TtsSpeechService.applyReplacements("", Map.of("a", "b")));
+        assertEquals("hello", TtsSpeechService.applyReplacements("hello", null));
+        assertEquals("hello", TtsSpeechService.applyReplacements("hello", Map.of()));
+    }
 }

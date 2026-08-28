@@ -11,5 +11,10 @@
   "characterVoices": {
     "Davos Skyworth": "am_michael",
     "Strelok Holmes": "bf_isabella"
+  },
+  "stringReplacements": {
+    "dscan": "dee scan",
+    "FC": "Fleet Commander",
+    "Jita": "Ghee-tah"
   }
 }
