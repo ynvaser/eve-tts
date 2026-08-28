@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import systems.bdev.evetts.audio.AudioDevicePlayer;
 import systems.bdev.evetts.config.AppConfiguration;
 import systems.bdev.evetts.dto.ChatMessageDto;
+import systems.bdev.evetts.event.ChatEventListener;
+import systems.bdev.evetts.model.ChatEvent;
+import systems.bdev.evetts.model.ChatEventStatus;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +45,7 @@ public class TtsSpeechService implements AutoCloseable {
     private final AudioDevicePlayer audioPlayer;
     private final ExecutorService ttsExecutor;
     private final Map<String, Voice> voiceCache = new ConcurrentHashMap<>();
+    private final List<ChatEventListener> chatEventListeners = new CopyOnWriteArrayList<>();
 
     private Chorus chorus;
     private boolean initialized = false;
@@ -147,6 +152,32 @@ public class TtsSpeechService implements AutoCloseable {
         }
     }
 
+    public void addChatEventListener(ChatEventListener listener) {
+        if (listener != null && !chatEventListeners.contains(listener)) {
+            chatEventListeners.add(listener);
+        }
+    }
+
+    public void removeChatEventListener(ChatEventListener listener) {
+        if (listener != null) {
+            chatEventListeners.remove(listener);
+        }
+    }
+
+    public void notifyChatEventListeners(ChatEvent event) {
+        for (ChatEventListener listener : chatEventListeners) {
+            try {
+                listener.onChatEvent(event);
+            } catch (Exception e) {
+                logger.error("Error notifying ChatEventListener: {}", e.getMessage(), e);
+            }
+        }
+    }
+
+    public AppConfiguration getConfig() {
+        return config;
+    }
+
     public boolean logChatMessage(ChatMessageDto chatMessage) {
         if (chatMessage == null) {
             return false;
@@ -174,6 +205,15 @@ public class TtsSpeechService implements AutoCloseable {
 
             if (voiceModelName == null) {
                 logger.trace("Sender '{}' is not explicitly defined in characterVoices. Skipping message.", cleanSender);
+                notifyChatEventListeners(new ChatEvent(
+                        chatMessage.getTimestamp(),
+                        chatMessage.getChannelName(),
+                        cleanSender,
+                        null,
+                        chatMessage.getMessage(),
+                        ChatEventStatus.FILTERED,
+                        "Sender not configured in characterVoices"
+                ));
                 return false;
             }
         }
@@ -195,6 +235,15 @@ public class TtsSpeechService implements AutoCloseable {
         } catch (JsonProcessingException e) {
             logger.trace("Error serializing chat message to JSON: {}", e.getMessage());
         }
+
+        notifyChatEventListeners(new ChatEvent(
+                chatMessage.getTimestamp(),
+                chatMessage.getChannelName(),
+                cleanSender,
+                voiceModelName,
+                chatMessage.getMessage(),
+                ChatEventStatus.SPOKEN
+        ));
 
         // Schedule TTS synthesis & playback if enabled and voice model is mapped
         if (config.isEnableTts() && voiceModelName != null && chatMessage.getMessage() != null && !chatMessage.getMessage().trim().isEmpty()) {
