@@ -94,18 +94,9 @@ tasks.register('createWindowsBundle') {
         // Create double-clickable Windows launcher batch script
         def runBat = file("$bundleDir/run.bat")
         runBat.text = """@echo off
-title EVE Chat Log Service
 cd /d "%~dp0"
-echo ==================================================
-echo   Starting EVE-TTS Chat Log Service (Standalone)
-echo ==================================================
-echo.
-"%~dp0bin\\java.exe" -cp "%~dp0app\\*" systems.bdev.evetts.Main %*
-if %ERRORLEVEL% NEQ 0 (
-    echo.
-    echo Application stopped with exit code %ERRORLEVEL%.
-    pause
-)
+start "" "%~dp0bin\\javaw.exe" -cp "%~dp0app\\*" systems.bdev.evetts.Main %*
+exit
 """
 
         // Copy default config.json, config_example_kokoro.json.txt, and config_example_piper.json.txt to bundle

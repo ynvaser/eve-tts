@@ -21,6 +21,10 @@ public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            logger.error("Uncaught exception in thread [{}]: {}", thread.getName(), throwable.getMessage(), throwable);
+        });
+
         boolean cliMode = Arrays.stream(args).anyMatch(arg -> "--cli".equalsIgnoreCase(arg) || "--headless".equalsIgnoreCase(arg));
 
         if (cliMode) {

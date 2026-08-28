@@ -96,8 +96,8 @@ public class ConfigurationTabView extends ScrollPane {
         setFitToWidth(true);
         setStyle("-fx-background-color: transparent;");
 
-        VBox contentBox = new VBox(16);
-        contentBox.setPadding(new Insets(16));
+        VBox contentBox = new VBox(12);
+        contentBox.setPadding(new Insets(12, 16, 12, 16));
 
         contentBox.getChildren().addAll(
                 createGeneralSettingsCard(),
@@ -111,7 +111,7 @@ public class ConfigurationTabView extends ScrollPane {
     }
 
     private VBox createGeneralSettingsCard() {
-        VBox card = new VBox(12);
+        VBox card = new VBox(10);
         card.getStyleClass().add("card");
 
         Label cardTitle = new Label("General & Hardware Settings");
@@ -119,7 +119,7 @@ public class ConfigurationTabView extends ScrollPane {
 
         GridPane grid = new GridPane();
         grid.setHgap(12);
-        grid.setVgap(10);
+        grid.setVgap(8);
 
         // EVE Log Directory
         Label logDirLabel = new Label("EVE Chatlogs Directory:");
@@ -199,7 +199,7 @@ public class ConfigurationTabView extends ScrollPane {
         chanTitle.getStyleClass().add("card-title");
 
         channelsTable.setItems(channelList);
-        channelsTable.setPrefHeight(180);
+        channelsTable.setPrefHeight(160);
         channelsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<String, String> nameCol = new TableColumn<>("Channel Name");
@@ -238,7 +238,7 @@ public class ConfigurationTabView extends ScrollPane {
         voicesTitle.getStyleClass().add("card-title");
 
         voiceMappingTable.setItems(voiceMappingList);
-        voiceMappingTable.setPrefHeight(180);
+        voiceMappingTable.setPrefHeight(160);
         voiceMappingTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         voiceMappingTable.setEditable(true);
 
@@ -283,7 +283,7 @@ public class ConfigurationTabView extends ScrollPane {
     }
 
     private VBox createAuditionCard() {
-        VBox card = new VBox(10);
+        VBox card = new VBox(8);
         card.getStyleClass().add("card");
 
         Label cardTitle = new Label("Voice Audition & Testing");
@@ -291,7 +291,7 @@ public class ConfigurationTabView extends ScrollPane {
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
-        grid.setVgap(10);
+        grid.setVgap(8);
 
         auditionEngineComboBox.getItems().addAll(voiceCatalogService.getSupportedEngines());
         auditionEngineComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -319,8 +319,9 @@ public class ConfigurationTabView extends ScrollPane {
     }
 
     private VBox createActionButtonsCard() {
-        VBox card = new VBox(10);
+        VBox card = new VBox(8);
         card.getStyleClass().add("card");
+        card.setPadding(new Insets(12, 16, 12, 16));
 
         HBox actionRow = new HBox(12);
         actionRow.setAlignment(Pos.CENTER_LEFT);

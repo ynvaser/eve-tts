@@ -50,8 +50,8 @@ public class DiagnosticsTabView extends ScrollPane {
         setFitToWidth(true);
         setStyle("-fx-background-color: transparent;");
 
-        VBox contentBox = new VBox(16);
-        contentBox.setPadding(new Insets(16));
+        VBox contentBox = new VBox(12);
+        contentBox.setPadding(new Insets(12, 16, 12, 16));
 
         contentBox.getChildren().addAll(
                 createDiagnosticsCards(),

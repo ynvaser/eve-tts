@@ -2,7 +2,9 @@ package systems.bdev.evetts.ui;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +53,23 @@ public class EveTtsApplication extends Application {
         );
 
         // 3. Configure Scene & Theme
-        Scene scene = new Scene(controller.getView(), 1120, 760);
+        double defaultWidth = 1280;
+        double defaultHeight = 920;
+
+        try {
+            Screen primaryScreen = Screen.getPrimary();
+            if (primaryScreen != null) {
+                Rectangle2D bounds = primaryScreen.getVisualBounds();
+                // Ensure default window is generously sized so all controls and panels are visible without scrolling,
+                // while gracefully fitting within the user's available screen bounds.
+                defaultWidth = Math.min(1280, Math.max(960, bounds.getWidth() - 60));
+                defaultHeight = Math.min(920, Math.max(700, bounds.getHeight() - 60));
+            }
+        } catch (Exception e) {
+            logger.warn("Could not determine primary screen visual bounds, using fallback dimensions.", e);
+        }
+
+        Scene scene = new Scene(controller.getView(), defaultWidth, defaultHeight);
 
         URL cssResource = getClass().getResource("/styles/theme.css");
         if (cssResource != null) {
@@ -61,11 +79,17 @@ public class EveTtsApplication extends Application {
         }
 
         primaryStage.setTitle("EVE-TTS - Voice Synthesizer & Log Monitor");
-        primaryStage.setMinWidth(860);
-        primaryStage.setMinHeight(600);
+        primaryStage.setMinWidth(960);
+        primaryStage.setMinHeight(680);
         primaryStage.setScene(scene);
 
-        // 4. Graceful Shutdown Hook
+        // 4. Graceful Shutdown Hooks
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (appService != null) {
+                appService.stop();
+            }
+        }, "EVE-TTS-GUI-ShutdownHook"));
+
         primaryStage.setOnCloseRequest(event -> {
             logger.info("Application window close requested. Shutting down background services...");
             if (appService != null) {
