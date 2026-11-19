@@ -10,4 +10,6 @@ public interface AudioDeviceService {
     List<String> getAvailableAudioDevices();
 
     boolean isDeviceAvailable(String deviceName);
+
+    String getDefaultAudioDevice();
 }

@@ -31,6 +31,7 @@ import systems.bdev.evetts.service.api.VoiceCatalogService;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * View component for configuring, testing, and persisting String & Pronunciation Replacements.
@@ -336,7 +337,20 @@ public class ReplacementsTabView extends ScrollPane {
             configurationService.updateConfiguration(config);
             configurationService.saveConfiguration();
 
-            showStatus("String replacements successfully saved to config.json.", false);
+            if (appService != null && appService.isRunning()) {
+                showStatus("Replacements saved. Restarting service to apply changes...", false);
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        appService.restart();
+                        Platform.runLater(() -> showStatus("Replacements saved and service restarted successfully.", false));
+                    } catch (Exception e) {
+                        logger.error("Failed to auto-restart service after saving replacements: {}", e.getMessage(), e);
+                        Platform.runLater(() -> showStatus("Replacements saved, but auto-restart failed: " + e.getMessage(), true));
+                    }
+                });
+            } else {
+                showStatus("String replacements successfully saved to config.json.", false);
+            }
         } catch (Exception e) {
             logger.error("Failed to save string replacements: {}", e.getMessage(), e);
             showStatus("Failed to save: " + e.getMessage(), true);

@@ -64,7 +64,7 @@ public class AppConfiguration {
 
     @JsonProperty("audioDevice")
     @JsonAlias({"audioDevice", "AudioDevice"})
-    private String audioDevice = "CABLE Input";
+    private String audioDevice = "";
 
     @JsonProperty("characterVoices")
     @JsonAlias({"characterVoices", "CharacterVoices", "voiceMap"})

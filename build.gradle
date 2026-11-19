@@ -99,27 +99,11 @@ start "" "%~dp0bin\\javaw.exe" -cp "%~dp0app\\*" systems.bdev.evetts.Main %*
 exit
 """
 
-        // Copy default config.json, config_example_kokoro.json.txt, and config_example_piper.json.txt to bundle
+        // Copy default config.json to bundle
         def rootConfig = project.file("config.json")
         if (rootConfig.exists()) {
             project.copy {
                 from rootConfig
-                into bundleDir
-            }
-        }
-
-        def kokoroExample = project.file("config_example_kokoro.json.txt")
-        if (kokoroExample.exists()) {
-            project.copy {
-                from kokoroExample
-                into bundleDir
-            }
-        }
-
-        def piperExample = project.file("config_example_piper.json.txt")
-        if (piperExample.exists()) {
-            project.copy {
-                from piperExample
                 into bundleDir
             }
         }

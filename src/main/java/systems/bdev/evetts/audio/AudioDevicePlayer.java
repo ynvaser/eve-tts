@@ -68,15 +68,11 @@ public class AudioDevicePlayer {
             logger.info("  - Output Device: {}", dev);
         }
 
-        if (targetDeviceName == null || targetDeviceName.trim().isEmpty()) {
-            String errMsg = "Configured audio device name is blank or null! Application stopping.\nAvailable Devices:\n" +
-                    String.join("\n", availableDevices);
-            logger.error(errMsg);
-            throw new IllegalStateException(errMsg);
-        }
+        boolean isSpecified = (targetDeviceName != null && !targetDeviceName.trim().isEmpty());
+        String searchKey = isSpecified ? targetDeviceName.trim().toLowerCase() : null;
 
-        String searchKey = targetDeviceName.trim().toLowerCase();
         Mixer.Info[] mixerInfos = AudioSystem.getMixerInfo();
+        Mixer.Info firstDetectedMixer = null;
 
         for (Mixer.Info info : mixerInfos) {
             try {
@@ -85,15 +81,33 @@ public class AudioDevicePlayer {
                 Line.Info clipInfo = new Line.Info(Clip.class);
 
                 if (mixer.isLineSupported(sourceLineInfo) || mixer.isLineSupported(clipInfo)) {
-                    String fullName = (info.getName() + " " + info.getDescription()).toLowerCase();
-                    if (fullName.contains(searchKey)) {
-                        this.selectedMixerInfo = info;
-                        logger.info("Successfully selected target audio device: '{}' [{}]", info.getName(), info.getDescription());
-                        return info;
+                    if (firstDetectedMixer == null) {
+                        firstDetectedMixer = info;
+                    }
+                    if (isSpecified) {
+                        String fullName = (info.getName() + " " + info.getDescription()).toLowerCase();
+                        if (fullName.contains(searchKey)) {
+                            this.selectedMixerInfo = info;
+                            logger.info("Successfully selected target audio device: '{}' [{}]", info.getName(), info.getDescription());
+                            return info;
+                        }
                     }
                 }
             } catch (Exception e) {
                 // Ignore errors checking individual mixers
+            }
+        }
+
+        if (!isSpecified) {
+            if (firstDetectedMixer != null) {
+                this.selectedMixerInfo = firstDetectedMixer;
+                logger.info("No audio device specified; defaulting to first detected audio device: '{}' [{}]",
+                        firstDetectedMixer.getName(), firstDetectedMixer.getDescription());
+                return firstDetectedMixer;
+            } else {
+                String errMsg = "No available audio output devices detected on this system.";
+                logger.error(errMsg);
+                throw new IllegalStateException(errMsg);
             }
         }
 

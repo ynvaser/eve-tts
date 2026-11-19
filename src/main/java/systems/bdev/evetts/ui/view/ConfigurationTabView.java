@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * View component for managing Application Configuration, Channel Listeners,
@@ -427,9 +428,9 @@ public class ConfigurationTabView extends ScrollPane {
         useGpuCheckBox.setSelected(config.isUseGpu());
 
         refreshAudioDeviceList();
-        if (config.getAudioDevice() != null) {
-            audioDeviceComboBox.setValue(config.getAudioDevice());
-            auditionDeviceComboBox.setValue(config.getAudioDevice());
+        if (config.getAudioDevice() != null && !config.getAudioDevice().trim().isEmpty()) {
+            audioDeviceComboBox.setValue(config.getAudioDevice().trim());
+            auditionDeviceComboBox.setValue(config.getAudioDevice().trim());
         }
 
         auditionEngineComboBox.setValue(config.getTtsEngine());
@@ -485,7 +486,20 @@ public class ConfigurationTabView extends ScrollPane {
             configurationService.updateConfiguration(config);
             configurationService.saveConfiguration();
 
-            showStatus("Configuration saved successfully. If service is running, restart to apply new engine/channels.", false);
+            if (appService != null && appService.isRunning()) {
+                showStatus("Configuration saved. Restarting service to apply changes...", false);
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        appService.restart();
+                        Platform.runLater(() -> showStatus("Configuration saved and service restarted successfully.", false));
+                    } catch (Exception e) {
+                        logger.error("Failed to auto-restart service after configuration save: {}", e.getMessage(), e);
+                        Platform.runLater(() -> showStatus("Configuration saved, but auto-restart failed: " + e.getMessage(), true));
+                    }
+                });
+            } else {
+                showStatus("Configuration saved successfully.", false);
+            }
         } catch (Exception e) {
             logger.error("Failed to save configuration: {}", e.getMessage(), e);
             showStatus("Failed to save: " + e.getMessage(), true);

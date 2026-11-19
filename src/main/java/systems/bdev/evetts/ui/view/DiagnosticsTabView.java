@@ -20,6 +20,7 @@ import systems.bdev.evetts.service.api.ConfigurationService;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * View component for System Diagnostics, Hardware Status, and Console Output.
@@ -170,9 +171,15 @@ public class DiagnosticsTabView extends ScrollPane {
 
         // Check Audio Device
         String audioDev = config.getAudioDevice();
+        List<String> availableDevices = audioDeviceService.getAvailableAudioDevices();
         if (audioDev == null || audioDev.trim().isEmpty()) {
-            audioDeviceStatusLabel.setText("No device selected");
-            audioDeviceStatusLabel.setStyle("-fx-text-fill: #e5c07b;");
+            if (!availableDevices.isEmpty()) {
+                audioDeviceStatusLabel.setText(String.format("Default (First Detected: '%s')", availableDevices.get(0)));
+                audioDeviceStatusLabel.setStyle("-fx-text-fill: #49aa52;");
+            } else {
+                audioDeviceStatusLabel.setText("No audio devices detected");
+                audioDeviceStatusLabel.setStyle("-fx-text-fill: #e06c75;");
+            }
         } else {
             boolean available = audioDeviceService.isDeviceAvailable(audioDev);
             if (available) {

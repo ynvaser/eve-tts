@@ -97,7 +97,7 @@ public class JsonConfigurationService implements ConfigurationService {
         config.setEveLogDirectory(Paths.get(System.getProperty("user.home"), "Documents", "EVE", "logs", "Chatlogs").toString());
         config.setChannels(new java.util.ArrayList<>(java.util.List.of("Fleet")));
         config.setTtsEngine("kokoro");
-        config.setAudioDevice("CABLE Input");
+        config.setAudioDevice("");
         config.setEnableTts(true);
         config.setUseGpu(false);
         config.setPollIntervalMs(500L);

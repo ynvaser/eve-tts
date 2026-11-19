@@ -45,7 +45,7 @@ public class DefaultAudioDeviceService implements AudioDeviceService {
     @Override
     public boolean isDeviceAvailable(String deviceName) {
         if (deviceName == null || deviceName.trim().isEmpty()) {
-            return false;
+            return !getAvailableAudioDevices().isEmpty();
         }
 
         String searchKey = deviceName.trim().toLowerCase();
@@ -65,5 +65,11 @@ public class DefaultAudioDeviceService implements AudioDeviceService {
             }
         }
         return false;
+    }
+
+    @Override
+    public String getDefaultAudioDevice() {
+        List<String> devices = getAvailableAudioDevices();
+        return devices.isEmpty() ? null : devices.get(0);
     }
 }

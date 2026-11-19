@@ -61,6 +61,7 @@ class AppConfigurationTest {
         assertTrue(config.getChannels().contains("CorpChat"));
 
         assertEquals(250L, config.getPollIntervalMs());
+        assertEquals("", config.getAudioDevice());
     }
 
     @Test

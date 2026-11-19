@@ -64,6 +64,42 @@ class DefaultAppServiceTest {
     }
 
     @Test
+    void testAppServiceRestart(@TempDir Path tempDir) throws Exception {
+        Path configPath = tempDir.resolve("config.json");
+        JsonConfigurationService configService = new JsonConfigurationService(configPath.toString());
+
+        AppConfiguration config = configService.getConfiguration();
+        config.setEveLogDirectory(tempDir.toString());
+        config.setChannels(List.of("Fleet"));
+        config.setEnableTts(false);
+        config.setCharacterVoices(Map.of("Davos", "am_michael"));
+        configService.updateConfiguration(config);
+        configService.saveConfiguration();
+
+        UserDataService userDataService = new UserDataService(tempDir.resolve("userdata.json").toString());
+        AudioDeviceService audioService = new DefaultAudioDeviceService();
+        VoiceCatalogService voiceService = new DefaultVoiceCatalogService();
+
+        DefaultAppService appService = new DefaultAppService(configService, audioService, voiceService, userDataService);
+
+        appService.start();
+        assertTrue(appService.isRunning());
+
+        // Update configuration while running
+        config.setChannels(List.of("Fleet", "Corp"));
+        configService.updateConfiguration(config);
+        configService.saveConfiguration();
+
+        // Restart service
+        appService.restart();
+        assertTrue(appService.isRunning());
+        assertEquals(ServiceState.RUNNING, appService.getState());
+
+        appService.stop();
+        assertFalse(appService.isRunning());
+    }
+
+    @Test
     void testChatEventListeners(@TempDir Path tempDir) {
         Path configPath = tempDir.resolve("config.json");
         JsonConfigurationService configService = new JsonConfigurationService(configPath.toString());

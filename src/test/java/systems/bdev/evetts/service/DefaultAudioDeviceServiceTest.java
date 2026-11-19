@@ -18,9 +18,20 @@ class DefaultAudioDeviceServiceTest {
     }
 
     @Test
-    void testIsDeviceAvailableNullOrEmptyReturnsFalse() {
-        assertFalse(audioService.isDeviceAvailable(null));
-        assertFalse(audioService.isDeviceAvailable(""));
-        assertFalse(audioService.isDeviceAvailable("   "));
+    void testIsDeviceAvailableNullOrEmptyReflectsDeviceAvailability() {
+        boolean hasDevices = !audioService.getAvailableAudioDevices().isEmpty();
+        assertEquals(hasDevices, audioService.isDeviceAvailable(null));
+        assertEquals(hasDevices, audioService.isDeviceAvailable(""));
+        assertEquals(hasDevices, audioService.isDeviceAvailable("   "));
+    }
+
+    @Test
+    void testGetDefaultAudioDevice() {
+        List<String> devices = audioService.getAvailableAudioDevices();
+        if (!devices.isEmpty()) {
+            assertEquals(devices.get(0), audioService.getDefaultAudioDevice());
+        } else {
+            assertNull(audioService.getDefaultAudioDevice());
+        }
     }
 }
