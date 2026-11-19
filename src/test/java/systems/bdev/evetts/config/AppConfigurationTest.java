@@ -61,6 +61,7 @@ class AppConfigurationTest {
         assertTrue(config.getChannels().contains("CorpChat"));
 
         assertEquals(250L, config.getPollIntervalMs());
+        assertEquals("", config.getAudioDevice());
     }
 
     @Test
@@ -120,5 +121,28 @@ class AppConfigurationTest {
 
         AppConfiguration config = AppConfiguration.loadConfiguration(configFile.toString());
         assertEquals("piper", config.getTtsEngine());
+    }
+
+    @Test
+    void testLoadStringReplacementsConfiguration(@TempDir Path tempDir) throws Exception {
+        Path configFile = tempDir.resolve("replacements_config.json");
+        String json = """
+                {
+                  "characterVoices": {
+                    "Davos Skyworth": "am_michael"
+                  },
+                  "stringReplacements": {
+                    "dscan": "dee scan",
+                    "FC": "Fleet Commander"
+                  }
+                }
+                """;
+        Files.writeString(configFile, json);
+
+        AppConfiguration config = AppConfiguration.loadConfiguration(configFile.toString());
+        assertNotNull(config.getStringReplacements());
+        assertEquals(2, config.getStringReplacements().size());
+        assertEquals("dee scan", config.getStringReplacements().get("dscan"));
+        assertEquals("Fleet Commander", config.getStringReplacements().get("FC"));
     }
 }

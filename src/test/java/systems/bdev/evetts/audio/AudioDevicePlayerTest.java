@@ -22,4 +22,20 @@ class AudioDevicePlayerTest {
                 "Exception message should mention the missing device"
         );
     }
+
+    @Test
+    void testValidateBlankDeviceAutoSelectsFirst() {
+        AudioDevicePlayer player = new AudioDevicePlayer();
+        var available = AudioDevicePlayer.listAvailableOutputDevices();
+        if (!available.isEmpty()) {
+            var selectedNull = player.validateAndSelectDevice(null);
+            assertNotNull(selectedNull, "Null device should auto-select first available mixer");
+
+            var selectedBlank = player.validateAndSelectDevice("");
+            assertNotNull(selectedBlank, "Blank device string should auto-select first available mixer");
+
+            var selectedSpaces = player.validateAndSelectDevice("   ");
+            assertNotNull(selectedSpaces, "Whitespace device string should auto-select first available mixer");
+        }
+    }
 }

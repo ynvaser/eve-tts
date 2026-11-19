@@ -15,6 +15,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -63,11 +64,15 @@ public class AppConfiguration {
 
     @JsonProperty("audioDevice")
     @JsonAlias({"audioDevice", "AudioDevice"})
-    private String audioDevice = "CABLE Input";
+    private String audioDevice = "";
 
     @JsonProperty("characterVoices")
     @JsonAlias({"characterVoices", "CharacterVoices", "voiceMap"})
     private Map<String, String> characterVoices = new HashMap<>();
+
+    @JsonProperty("stringReplacements")
+    @JsonAlias({"stringReplacements", "StringReplacements", "replacements", "pronunciations"})
+    private Map<String, String> stringReplacements = new LinkedHashMap<>();
 
     public AppConfiguration() {
     }
@@ -247,5 +252,13 @@ public class AppConfiguration {
 
     public void setCharacterVoices(Map<String, String> characterVoices) {
         this.characterVoices = characterVoices != null ? characterVoices : new HashMap<>();
+    }
+
+    public Map<String, String> getStringReplacements() {
+        return stringReplacements != null ? stringReplacements : new LinkedHashMap<>();
+    }
+
+    public void setStringReplacements(Map<String, String> stringReplacements) {
+        this.stringReplacements = stringReplacements != null ? new LinkedHashMap<>(stringReplacements) : new LinkedHashMap<>();
     }
 }

@@ -20,7 +20,19 @@ application {
     mainClass = 'systems.bdev.evetts.Main'
 }
 
+def currentOs = org.gradle.internal.os.OperatingSystem.current()
+def javafxPlatform = currentOs.isWindows() ? 'win' : (currentOs.isMacOsX() ? 'mac' : 'linux')
+
 dependencies {
+    implementation "org.openjfx:javafx-base:23.0.2:${javafxPlatform}"
+    implementation "org.openjfx:javafx-graphics:23.0.2:${javafxPlatform}"
+    implementation "org.openjfx:javafx-controls:23.0.2:${javafxPlatform}"
+    implementation "org.openjfx:javafx-fxml:23.0.2:${javafxPlatform}"
+    implementation 'org.openjfx:javafx-base:23.0.2'
+    implementation 'org.openjfx:javafx-graphics:23.0.2'
+    implementation 'org.openjfx:javafx-controls:23.0.2'
+    implementation 'org.openjfx:javafx-fxml:23.0.2'
+
     implementation 'org.pitest.voices:chorus:0.0.9'
     implementation 'org.pitest.voices:kokoro-runtime:0.0.9'
     implementation 'org.pitest.voices:model-downloader:0.0.9'
@@ -58,7 +70,7 @@ tasks.register('createRuntimeImage', Exec) {
     }
 
     commandLine jlinkExecutable,
-            '--add-modules', 'java.base,java.logging,java.naming,java.desktop,jdk.unsupported',
+            '--add-modules', 'java.base,java.logging,java.naming,java.desktop,jdk.unsupported,java.scripting,java.xml',
             '--strip-debug',
             '--no-header-files',
             '--no-man-pages',
@@ -82,41 +94,16 @@ tasks.register('createWindowsBundle') {
         // Create double-clickable Windows launcher batch script
         def runBat = file("$bundleDir/run.bat")
         runBat.text = """@echo off
-title EVE Chat Log Service
 cd /d "%~dp0"
-echo ==================================================
-echo   Starting EVE-TTS Chat Log Service (Standalone)
-echo ==================================================
-echo.
-"%~dp0bin\\java.exe" -cp "%~dp0app\\*" systems.bdev.evetts.Main %*
-if %ERRORLEVEL% NEQ 0 (
-    echo.
-    echo Application stopped with exit code %ERRORLEVEL%.
-    pause
-)
+start "" "%~dp0bin\\javaw.exe" -cp "%~dp0app\\*" systems.bdev.evetts.Main %*
+exit
 """
 
-        // Copy default config.json, config_example_kokoro.json.txt, and config_example_piper.json.txt to bundle
+        // Copy default config.json to bundle
         def rootConfig = project.file("config.json")
         if (rootConfig.exists()) {
             project.copy {
                 from rootConfig
-                into bundleDir
-            }
-        }
-
-        def kokoroExample = project.file("config_example_kokoro.json.txt")
-        if (kokoroExample.exists()) {
-            project.copy {
-                from kokoroExample
-                into bundleDir
-            }
-        }
-
-        def piperExample = project.file("config_example_piper.json.txt")
-        if (piperExample.exists()) {
-            project.copy {
-                from piperExample
                 into bundleDir
             }
         }
